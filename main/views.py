@@ -7,6 +7,7 @@ from .serializer import NetworkSerializer
 from rest_framework import viewsets
 
 class NetworkViewset(viewsets.ModelViewSet):
+    """Получение всех торговых сетей"""
     queryset = NetworkNode.objects.filter(network_endpoint=True)
     serializer_class = NetworkSerializer
 

@@ -4,3 +4,13 @@
 /venv/
 .idea
 .idea/
+__pycache__/
+__pycache__
+rocketData/__pycache__/wsgi.cpython-311.pyc
+rocketData/__pycache__/urls.cpython-311.pyc
+rocketData/__pycache__/settings.cpython-311.pyc
+rocketData/__pycache__/__init__.cpython-311.pyc
+rocketData/__pycache__/
+rocketData/__pycache__
+main/__pycache__/views.cpython-311.pyc
+main/__pycache__/serializer.cpython-311.pyc

@@ -10,7 +10,7 @@ class NetworkNodeAdmin(admin.ModelAdmin):
     filter_horizontal = ['products', 'employees']
     list_filter = ['city']
     search_fields = ['city']
-    list_display = ['type', 'name', 'email', 'supplier_link', 'debt']
+    list_display = ['id', 'type', 'name', 'email', 'supplier_link', 'debt']
     actions = ['clear_debt']
     ordering = ['type']
     readonly_fields = ('network_endpoint',)

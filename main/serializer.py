@@ -17,8 +17,8 @@ class EmploeeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class NetworkSerializer(serializers.ModelSerializer):
-    """Сериализатор торговой сети"""
+class FulNetworkSerializer(serializers.ModelSerializer):
+    """Сериализатор для получение полного бъекта торговой сети"""
     products = ProductSerializer(many=True)
     employees = EmploeeSerializer(many=True)
 
@@ -56,3 +56,35 @@ class NetworkSerializer(serializers.ModelSerializer):
             previous_value = response
         rec(representation)
         return response
+
+class PartNetworkSerializer(serializers.ModelSerializer):
+    """Сериализатор для получение бъекта звена торговой сети"""
+    network_endpoint = serializers.BooleanField(read_only=True)
+    debt = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = NetworkNode
+        fields = '__all__'
+
+    def validate(self, data):
+        '''Валидация иерархии при создании и редактировании объектов через api'''
+        org_type = ['Завод', 'Дистрибьютор', 'Дилерский центр', 'Крупная розничная сеть',
+                    'Индивидуальный предприниматель']
+        type = data.get('type')
+        supplier = data.get('supplier')
+        type_suplier = None
+        if supplier:
+            type_suplier = supplier.type
+        data.pop('network_endpoint', None)
+        if type_suplier and type:
+            if int(type) == 0 and supplier is not None:
+                raise serializers.ValidationError({'supplier': ["У типа завод нельзя выбрать поставщика"]})
+            if int(type) == int(type_suplier):
+                raise serializers.ValidationError({'supplier': [f'Вы не можете выбрать тип поставщика {org_type[int(type_suplier)]} в качестве'
+                                          f' поставщика для организации типа {org_type[int(type)]}']})
+            if int(type) < int(type_suplier):
+                raise serializers.ValidationError( {'supplier': [f'Тип поставщика должен быть выше по иерархии чем выбранный тип организации']})
+        if int(type) > 0 and type_suplier == None:
+            raise serializers.ValidationError(
+                {'supplier': [f'У всех типов организаций кроме завода должен быть поставщик. Необходимо выбрать поставщика']})
+        return data

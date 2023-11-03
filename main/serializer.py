@@ -60,7 +60,7 @@ class FulNetworkSerializer(serializers.ModelSerializer):
 class PartNetworkSerializer(serializers.ModelSerializer):
     """Сериализатор для получение бъекта звена торговой сети"""
     network_endpoint = serializers.BooleanField(read_only=True)
-    debt = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    # debt = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = NetworkNode

@@ -5,9 +5,9 @@ from rest_framework import viewsets, mixins, status
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
 
-from .models import NetworkNode
+from .models import NetworkNode, Product
 from .permisions import IsActivate
-from .serializer import FulNetworkSerializer, PartNetworkSerializer
+from .serializer import FulNetworkSerializer, PartNetworkSerializer, ProductSerializer
 from .filters import NetworkFilter
 
 
@@ -29,7 +29,7 @@ class PartNetworkViewset(mixins.ListModelMixin,
                      mixins.CreateModelMixin,
                      mixins.DestroyModelMixin,
                      viewsets.GenericViewSet):
-    """Получение списка всех торговых сетей"""
+    """Представление всех звеньев торговых сетей"""
     queryset = NetworkNode.objects.all()
     serializer_class = PartNetworkSerializer
     permission_classes = (IsActivate,)
@@ -37,7 +37,7 @@ class PartNetworkViewset(mixins.ListModelMixin,
     filterset_class = NetworkFilter
 
     def list(self, request, *args, **kwargs):
-        """Представление списка всех звеньев торговых сетей"""
+        """Получение списка всех звеньев торговых сетей"""
         queryset = self.filter_queryset(NetworkNode.objects.all())
         response = self.serializer_class(queryset, many=True)
         return Response(response.data, status=status.HTTP_200_OK)
@@ -54,7 +54,9 @@ class PartNetworkViewset(mixins.ListModelMixin,
     def partial_update(self, request, *args, **kwargs):
         """Обновление объектов торговой сети"""
         obj_id = kwargs.get('pk')
-        serializer = PartNetworkSerializer(data=request.data)
+        data = request.data
+        data.pop('debt', None)
+        serializer = PartNetworkSerializer(data=data)
         try:
             instanse = NetworkNode.objects.get(id=obj_id)
             if serializer.is_valid():
@@ -67,9 +69,53 @@ class PartNetworkViewset(mixins.ListModelMixin,
             return Response({'error': f'Записи с id = {obj_id} не найдено'})
 
     def destroy(self, request, *args, **kwargs):
+        """Удаление объектов торговой сети"""
         obj_id = kwargs.get('pk')
         try:
             instanse = NetworkNode.objects.get(id=obj_id)
+            instanse.delete()
+        except ObjectDoesNotExist:
+            return Response({'error': f'Записи с id = {obj_id} не найдено'})
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class ProductViewset(mixins.CreateModelMixin,
+                     mixins.DestroyModelMixin,
+                     viewsets.GenericViewSet):
+    """Представленик товаров"""
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = (IsActivate,)
+
+
+    def create(self, request, *args, **kwargs):
+        """Создание объекта товара"""
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            new_obj = serializer.create(serializer.validated_data)
+            return Response(ProductSerializer(new_obj).data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"errors": serializer.errors})
+
+    def partial_update(self, request, *args, **kwargs):
+        """Обновление объекта товара"""
+        obj_id = kwargs.get('pk')
+        serializer = ProductSerializer(data=request.data)
+        try:
+            instanse = Product.objects.get(id=obj_id)
+            if serializer.is_valid():
+                response = serializer.update(instanse, serializer.validated_data)
+                return Response(ProductSerializer(response).data, status=status.HTTP_200_OK)
+            else:
+                return Response({"errors": serializer.errors})
+        except ObjectDoesNotExist:
+            return Response({'error': f'Записи с id = {obj_id} не найдено'})
+
+    def destroy(self, request, *args, **kwargs):
+        """Удаление объекта товара"""
+        obj_id = kwargs.get('pk')
+        try:
+            instanse = Product.objects.get(id=obj_id)
             instanse.delete()
         except ObjectDoesNotExist:
             return Response({'error': f'Записи с id = {obj_id} не найдено'})

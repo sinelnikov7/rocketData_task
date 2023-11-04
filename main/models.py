@@ -65,9 +65,10 @@ class Product(models.Model):
     class Meta:
         verbose_name = 'Товар'
         verbose_name_plural = 'Список товаров'
+        ordering = ['id']
 
     def __str__(self):
-        return f'{self.name} {self.model}'
+        return f'{self.name} {self.model} id - {self.id}'
 
 
 class Employee(models.Model):
@@ -79,9 +80,10 @@ class Employee(models.Model):
     class Meta:
         verbose_name = 'Сотрудник'
         verbose_name_plural = 'Сотрудники'
+        ordering = ['id']
 
     def __str__(self):
-        return f'{self.name} {self.surname} - {self.position}'
+        return f'{self.name} {self.surname} - {self.position} id - {self.id}'
 
 
 class User(AbstractUser):

@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 
 from .models import NetworkNode, Product, Employee, User
+from .tasks import clear_debt_celery
 
 
 class NetworkNodeAdmin(admin.ModelAdmin):
@@ -30,8 +31,14 @@ class NetworkNodeAdmin(admin.ModelAdmin):
     @admin.action(description='Обнулить задолженность')
     def clear_debt(self, request, queryset):
         '''Действие позволяющее сбросить задолженность у выбранных объектов'''
-        queryset.update(debt=0)
-        self.message_user(request, 'Задолженность обнулена')
+        if len(queryset) < 21:
+            queryset.update(debt=0)
+            self.message_user(request, 'Задолженность обнулена')
+        else:
+            obj_lst = []
+            for i in queryset:
+                obj_lst.append(i.id)
+            clear_debt_celery.delay(obj_lst)
 
 admin.site.register(NetworkNode, NetworkNodeAdmin)
 admin.site.register(Product)

@@ -16,3 +16,8 @@ rocketData/__pycache__/
 rocketData/__pycache__
 main/__pycache__/views.cpython-311.pyc
 main/__pycache__/serializer.cpython-311.pyc
+/main/migrations/0002_alter_employee_options_alter_product_options.py
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir
+

@@ -9,6 +9,7 @@ from .models import NetworkNode, Product
 from .permisions import IsActivate
 from .serializer import FulNetworkSerializer, PartNetworkSerializer, ProductSerializer
 from .filters import NetworkFilter
+from .tasks import send_email
 
 
 class FullNetworkViewset(mixins.ListModelMixin,
@@ -127,5 +128,7 @@ def get_network_obj_high_avg(request):
     """Получение объектов сети с задолженностью выше среднего"""
     queryset = NetworkNode.objects.filter(debt__gt=float(NetworkNode.objects.filter(debt__gt=0).aggregate(debt_avg=Avg('debt')).get('debt_avg')))
     response = PartNetworkSerializer(queryset, many=True)
+    send_email.delay()
+    # print(response.data)
     return Response(response.data, status=status.HTTP_200_OK)
 

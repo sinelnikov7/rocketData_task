@@ -29,6 +29,7 @@ class NetworkNode(models.Model):
     debt = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Задолженность', default=0, validators=[MinValueValidator(0)])
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     network_endpoint = models.BooleanField(default=True, verbose_name='Конечная точка сети')
+    author = models.ForeignKey('User', verbose_name='Создатель', on_delete=models.CASCADE, default=1)
 
     class Meta:
         verbose_name = "Звено сети по продаже электроники."

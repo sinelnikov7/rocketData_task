@@ -11,7 +11,7 @@ class NetworkNodeAdmin(admin.ModelAdmin):
     filter_horizontal = ['products', 'employees']
     list_filter = ['city']
     search_fields = ['city']
-    list_display = ['id', 'type', 'name', 'email', 'supplier_link', 'debt']
+    list_display = ['id', 'type', 'name', 'copy_email', 'supplier_link', 'debt']
     actions = ['clear_debt']
     ordering = ['type']
     readonly_fields = ('network_endpoint',)
@@ -26,7 +26,28 @@ class NetworkNodeAdmin(admin.ModelAdmin):
         else:
             return format_html(f'<p style="color:red; padding-left:0">Поставщик не выбран</p>')
 
+    def copy_email(self, obj):
+        '''Копировать адрес почты'''
+
+        script = 'function copy_email(target){{' \
+                 'console.log("зашло", target.target.id); ' \
+                 'textArea = document.createElement("textarea"); ' \
+                 'textArea.value = target.target.id; ' \
+                 'document.body.appendChild(textArea); ' \
+                 'textArea.select(); ' \
+                 'document.execCommand("copy"); ' \
+                 'document.body.removeChild(textArea);' \
+                 'alert(`Адрес почты скопирован в буфер обмена: ${{target.target.id}}`);' \
+                 '}}'
+        return format_html(f'<p>{obj.email}<img  src="http://i0905.com/main/images/ftr-one.png" '
+                           f'style="high: 10px; width: 10px; padding-left:5px" '
+                           f'id="{obj.email}" '
+                           f'onclick="copy_email(event)"></p>'
+                           f'<script>{script}</script>')
+
+
     supplier_link.short_description = 'Поставщик'
+    copy_email.short_description = 'email'
 
     @admin.action(description='Обнулить задолженность')
     def clear_debt(self, request, queryset):

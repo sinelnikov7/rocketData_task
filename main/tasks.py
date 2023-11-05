@@ -1,6 +1,8 @@
 import os
 import random
 import smtplib
+from email.mime.application import MIMEApplication
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -17,6 +19,8 @@ EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 @app.task(bind=True)
 def send_email(*args, **kwargs):
     """Отправка кода подтверждения регистрации на email"""
+    img_path = kwargs.get('img_path')
+    email_receiver = kwargs.get('email')
     email_sender = EMAIL_SENDER
     email_password = EMAIL_PASSWORD
     smtp_server = smtplib.SMTP('smtp.yandex.ru', 587)
@@ -26,9 +30,14 @@ def send_email(*args, **kwargs):
         f"Здравствуйте! Для продолжения введите проверочный код регистрации на сайте sportlife"))
     msg["From"] = email_sender
     msg["Subject"] = "Код подтверждения регистрации на сайте sportlife"
+    if os.path.isfile(img_path):
+        with open(img_path, 'rb') as file:
+            img = MIMEImage(file.read())
+    img.add_header('Content-ID', f'{img_path}')
+    msg.attach(img)
     smtp_server.set_debuglevel(1)
     smtp_server.login(email_sender, email_password)
-    smtp_server.sendmail(email_sender, 'tsoftin@gmail.com', msg.as_string())
+    smtp_server.sendmail(email_sender, email_receiver, msg.as_string())
     smtp_server.quit()
 
 

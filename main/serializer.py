@@ -1,14 +1,26 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Product, Employee, NetworkNode
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    """Сериализатор продуктов"""
+    """Сериализатор создания и получения продуктов"""
     class Meta:
         model = Product
         fields = '__all__'
 
+
+class ProductUpdateSerializer(ProductSerializer):
+    """Сериализатор обновления продуктов"""
+    name = serializers.CharField(max_length=25, required=False)
+    model = serializers.CharField(max_length=255, required=False)
+    date_release = serializers.DateField(required=False)
+    def validate_date_release(self, value):
+        """Проверка корректности даты выхода продукта на рынок. Дата не должна быть в будущем."""
+        if value and value > timezone.now().date():
+            raise serializers.ValidationError("Дата выхода продукта не может быть в будущем.")
+        return value
 
 class EmploeeSerializer(serializers.ModelSerializer):
     """Сериализатор сотрудников"""
@@ -33,6 +45,7 @@ class FulNetworkSerializer(serializers.ModelSerializer):
         response = {}
         previous_value = None
         def rec(dict):
+            """Установка порядка вывода полей объекта перед отправкой для удобства чтения json"""
             nonlocal response
             nonlocal previous_value
             if dict.get('supplier') != None:
@@ -58,13 +71,12 @@ class FulNetworkSerializer(serializers.ModelSerializer):
         return response
 
 class PartNetworkSerializer(serializers.ModelSerializer):
-    """Сериализатор для получение бъекта звена торговой сети"""
+    """Сериализатор для создания и получени бъекта звена торговой сети"""
     network_endpoint = serializers.BooleanField(read_only=True)
-    # debt = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = NetworkNode
-        fields = '__all__'
+        exclude = ('author', )
 
     def validate(self, data):
         '''Валидация иерархии при создании и редактировании объектов через api'''
@@ -88,3 +100,20 @@ class PartNetworkSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'supplier': [f'У всех типов организаций кроме завода должен быть поставщик. Необходимо выбрать поставщика']})
         return data
+
+
+class PartNetworkUpdateSerializer(PartNetworkSerializer):
+    """Сериализатор для обновления бъекта звена торговой сети"""
+    type = serializers.ChoiceField(choices=NetworkNode.TYPE_CHOICES, required=False)
+    name = serializers.CharField(max_length=50, required=False)
+    email = serializers.EmailField(required=False)
+    country = serializers.CharField(max_length=100, required=False)
+    city = serializers.CharField(max_length=100, required=False)
+    street = serializers.CharField(max_length=100, required=False)
+    house_number = serializers.CharField(max_length=50, required=False)
+    products = serializers.PrimaryKeyRelatedField(many=True, queryset=Product.objects.all(), required=False)
+    employees = serializers.PrimaryKeyRelatedField(many=True, queryset=Employee.objects.all(), required=False)
+    supplier = serializers.PrimaryKeyRelatedField(queryset=NetworkNode.objects.all(), required=False, allow_null=True)
+    debt = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    network_endpoint = serializers.BooleanField(read_only=True)

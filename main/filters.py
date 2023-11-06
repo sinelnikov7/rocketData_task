@@ -13,4 +13,5 @@ class NetworkFilter(django_filters.FilterSet):
         fields = ['country', 'product']
 
     def filter_by_product(self, queryset, name, value):
+        """Получить объект по наличию id продукта"""
         return queryset.filter(products__id=value)

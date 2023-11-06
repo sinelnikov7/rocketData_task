@@ -5,9 +5,10 @@ import random
 from rocketData.wsgi import *
 from faker import Faker
 
-
 from main.models import Product, Employee, NetworkNode
 
+
+"""Модуль для запуска заполнения базы данных тестовыми данными"""
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rocketData.settings')
 django.setup()

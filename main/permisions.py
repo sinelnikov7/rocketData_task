@@ -6,7 +6,7 @@ from rocketData.settings import SECRET_KEY
 
 
 class IsActivate(permissions.BasePermission):
-
+    """Право проверяющее активность пользователя"""
     def has_permission(self, request, view):
         access = False
         try:

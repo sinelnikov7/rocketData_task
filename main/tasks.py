@@ -1,14 +1,12 @@
 import os
 import random
 import smtplib
-from email.mime.application import MIMEApplication
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
 import dotenv
-
 from rocketData.celery import app
+
 from .models import NetworkNode
 
 dotenv.load_dotenv()
@@ -18,7 +16,7 @@ EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 @app.task(bind=True)
 def send_email(*args, **kwargs):
-    """Отправка кода подтверждения регистрации на email"""
+    """Отправка qr кода на email пользователя"""
     img_path = kwargs.get('img_path')
     email_receiver = kwargs.get('email')
     email_sender = EMAIL_SENDER
@@ -43,6 +41,7 @@ def send_email(*args, **kwargs):
 
 @app.task(bind=True)
 def debt_up(*args, **kwargs):
+    """Увеличение задолженности пере поставщиком"""
     summa = random.randint(5, 500)
     for part_network in NetworkNode.objects.exclude(type=0):
         part_network.debt += summa
@@ -50,6 +49,7 @@ def debt_up(*args, **kwargs):
 
 @app.task(bind=True)
 def debt_down(*args, **kwargs):
+    """Уменьшение задолженности пере поставщиком"""
     summa = random.randint(100, 10000)
     for part_network in NetworkNode.objects.exclude(type=0):
         now_debt = part_network.debt
@@ -62,6 +62,7 @@ def debt_down(*args, **kwargs):
 
 @app.task(bind=True)
 def clear_debt_celery(*args, **kwargs):
+    """Обгуление задолженности перед поставщиком"""
     obj_lst = args[1]
     for i in obj_lst:
        obj = NetworkNode.objects.get(id=int(i))

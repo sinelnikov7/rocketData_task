@@ -28,7 +28,6 @@ class NetworkNodeAdmin(admin.ModelAdmin):
 
     def copy_email(self, obj):
         '''Копировать адрес почты'''
-
         script = 'function copy_email(target){{' \
                  'console.log("зашло", target.target.id); ' \
                  'textArea = document.createElement("textarea"); ' \
